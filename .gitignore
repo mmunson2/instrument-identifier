@@ -1,0 +1,4 @@
+airspeed_frames/*
+vertical_speed_frames/*
+validation/*
+*.DS_Store
