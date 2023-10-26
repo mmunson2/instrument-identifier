@@ -1,4 +1,5 @@
-airspeed_frames/*
-vertical_speed_frames/*
-validation/*
+media/airspeed_frames/*
+media/vertical_speed_frames*
+media/input_video*
+media/validation*
 *.DS_Store

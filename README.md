@@ -46,8 +46,44 @@ To provide a visual output of the system, this tool displays frames of the input
 TODO:
 - Provide a visual representation of the aircraft and its attitude/speed/etc based on the model's interpretation of the instrument(s).
 
+---
+## Release 2: October 20th 2023
+
+This release significantly improved a number of the prototype-quality tools used to generate the first model.
+
+## Extract Frames
+
+This tool has been simplfiied to a function call. Since it needs quite a bit of tweaking the first time it's run I've kept separate cells for each instrument and added a "limit" parameter which allows for a single frame to be generated instead of the entire video. 
+
+## Label Frames
+
+This tool has been completely overhauled. It now allows you to step through each training frame, forward or backward, and view the existing label without overwriting. This allows for editing of existing labels, and quick corrections if an incorrect value is entered. It saves the entire CSV after each frame ensuring that data loss is minimal in a crash. It also has handling for missing frames that have labels and other edge cases.
 
 
+## Read Airspeed
 
+This is essentially a copy of the evaluation tool built for vertical speed in the last update. It displays each frame of a video feed along with a scaled-up overlay of the airspeed indicator. 
 
+TODO:
+- Combine these into a single evaluation tool that supports any number of instruments being evaluated at once
+- Potentially allow for stepping backwards in the video frames (create buffer?)
+- Perform labelling on some input videos. Graph the difference between the model's evaluation and the actual reading to determine how significant deviations are.
+
+## Feature Matching
+
+This is a currently unsuccessful experiment to see if feature matching can be used to identify the position of an instrument onscreen. It takes a single image of an instrument and a full cockpit image as input, then displays the features identified. Currently there is not a significantly greater number of features being identified on the target instrument than elsewhere in the cockpit, likely because of similiarities in the designs of each instrument. This may be refined in future updates to improve results, or dropped for another method.
+
+## New Models
+
+Three models have now been trained for instrument evaluation:
+
+1. The original vertical speed model
+2. An improved vertical speed model (Supports +4 through +6, higher accuracy overall)
+3. A preliminary airspeed model
+
+The vertical speed model provides very accurate results, and when the model differs from the actual value it tends to be by the smallest possible increment. The airspeed model is more challenging as two pointers are present on the same gauge, one representing current airspeed and the other representing maximum allowable airspeed. The model is accurate 95% of the time, but when it's wrong it usually evaluates the maximum allowable airspeed causing a huge jump in measured airspeed. This would be consequential if these values were used to model the aircraft's attitude/speed/position etc.
+
+TODO:
+- Attempt to improve the accuracy of the airspeed model using image preprocessing
+- Consider other systems, such as fuzzy logic, which might detect a large deviation in speed and ignore the current frame's reading.
 
