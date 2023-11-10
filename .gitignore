@@ -1,5 +1,6 @@
-media/airspeed_frames/*
-media/vertical_speed_frames*
-media/input_video*
-media/validation*
+media/*
+!media/demo_screenshots*
+!media/utility_frames*
+models/*
+
 *.DS_Store
