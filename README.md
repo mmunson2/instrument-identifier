@@ -89,7 +89,7 @@ TODO:
 
 
 ---
-## Release 3: November XX 2023
+## Release 3: November 10 2023
 
 This release focused on creating tools to measure the accuracy of an instrument model. While tensorflow provides an accuracy percentage while training a model, this doesn't necessarily mean the system will perform well on data outside the test/validation set. 
 
@@ -119,3 +119,43 @@ Compared to the vertical speed model, the airspeed model can use quite a bit of 
 
 ![Diff plot of the version one airspeed model](media/demo_screenshots/Airspeed_V1_daytime_validation_diff.png "Airspeed V2 diff Plot")
 
+## Release 4: November 22 2023
+
+This release lays the groundwork for the second half of this project - allowing an instrument to be detected and evaluated at any location onscreen and any reasonable level of zoom. As feature matching wasn't successful back in release 2, I opted to use another machine learning model trained to identify the bounding box (x, y, width, height) of a target instrument.
+
+The first step in implementing this system was to modify my label_frames tool to support this method of labelling. I opted to create an entirely separate branch of this tool for this purpose, but they could potentially be combined in the future. The tool allows a user to move a green, semi-transparent rectangle around the screen to cover the target instrument. The rectangle's width and height can be resized, and the precision of movement can be adjusted to allow for accurate bounding without an excessive amount of button clicks. Like the original label_frames the frames can be advanced back and forth, and if a label has already been applied the bounding box is visible in blue.
+
+![Bounding Box Frame Labelling Tool](media/demo_screenshots/Bounding_Box_Frame_Labeller.png "Example frame from the bounding box frame labelling tool")
+
+In this screenshot, the vertical speed indicator has already been labelled, represented by the blue rectangle. The user has moved the green selection box to cover the airspeed indicator. If the user presses space, this frame will be overwritten with the bounding box now covering the airspeed indicator.
+
+Like the airspeed and vertical speed indicator, the model is trained with a Sequential keras machine learning model. As the full-cockpit screenshots used for this model are quite a bit bigger than the cropped instrument images, I resized the input images to half and reduced the number of training epochs. 
+
+The exact settings used for the first iteration of this model are:
+```
+model = Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(540, 960, 3)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(4, activation='linear')  # 4 for bounding box coordinates (x, y, w, h)
+])
+```
+
+Finally, I built a version of `read_vertical_speed` that can display the model's predicted bounding box location over an input video. This allows us to visually evaluate the model's performance on different videos.
+
+![Bounding Box V1 Results - good example](media/demo_screenshots/Bounding_Box_V1_Good_Example.png "An example of where the bounding box model got the correct answer")
+
+When the camera position is relatively close to the start point, the bounding box model does a great job of consistently identifying the target instrument.
+
+![Bounding Box V1 Results - workable example](media/demo_screenshots/Bounding_Box_V1_Workable_Example.png "An example of where the bounding box model identified the target instrument, but also included a non-target instrument")
+
+When the camera position shifted outside the original range, the bounding box often included the target, but sometimes included instruments that weren't intended to be included. The vertical speed evaluation model could likely be made more robust to read from input like this, so I believe this to be workable.
+
+![Bounding Box V1 Results - bad example](media/demo_screenshots/Bounding_Box_V1_Bad_Example.png "An example of where the bounding box model wasn't even close")
+
+However, as could be expected, the bounding box model is occasionally completely wrong. This could not be used at all by the vertical speed evaluation script and may result in garbage readings.
+
+Overall the bounding box model shows promise, but isn't yet robust enough to work for every input video. I intend to use a longer training video with far more camera movement for the next verison of the model to see if I can get better results.
