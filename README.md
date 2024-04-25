@@ -159,3 +159,53 @@ When the camera position shifted outside the original range, the bounding box of
 However, as could be expected, the bounding box model is occasionally completely wrong. This could not be used at all by the vertical speed evaluation script and may result in garbage readings.
 
 Overall the bounding box model shows promise, but isn't yet robust enough to work for every input video. I intend to use a longer training video with far more camera movement for the next verison of the model to see if I can get better results.
+
+## Final Release - April 24 2024
+
+Writing a paper and getting ready for defense can take some time! Here's a summary of how this project wrapped up:
+
+- A whole new instrument! Attitude indicator training data, labelling mode, and training script were introduced. This is the most visually complex instrument of the three and demonstrates that instrument identification can work on a variety of different inputs. 
+
+![Attitude Indicator Example - Roll](media/demo_screenshots/attitude_indicator_roll.gif "An example of an attitude indicator. This instrument displays the pitch and roll of an aircraft.")
+
+- Statistics measurement! This was a necessity when writing a paper. This uses the existing comparison between ground truth and prediction in plot_diff to generate all sorts of statistics (accuracy, accuracy within a threshold, error, etc). 
+
+An example of some statistics I generated on my vertical speed model when trained with six epochs and evaluated with daytime lighting:
+
+```
+Accuracy: 92.91635267520724
+Percentage within 0.25 threshold: 100.0
+Mean difference: 0.00037678975131876413
+Mean Absolute Error (MAE): 0.017709118311981915
+Mean Squared Error (MSE): 0.004427279577995479
+Root Mean Squared Error (RMSE): 0.06653780562954777
+Median Absolute Error: 0.0
+Standard Deviation of Differences: 0.06653673878000681
+```
+
+
+- Better tuned models! Using the statistics generated I could determine the best epoch count to use. I also added a ton of training data for the airspeed model. This improved accuracy noticably.
+
+This plot shows the exact accuracy (count of predictions matching ground truth exactly) and threshold accuracy (allows a difference of 0.25 for vertical speed, as this is the measurement precision). For this instrument the epoch count had very little impact on accuracy after four epochs of training.
+
+![Vertical speed accuracy over epoch, daytime performance](media/demo_screenshots/VS_Accuracy_Over_Epoch_Daytime.png "A plot of vertical speed prediction accuracy vs the amount of epochs the model was trained on. It shows a roughly asymptotic increase that levels off after only three epochs of training.")
+
+- Bounding box identification didn't pan out :(. Unfortunately even with increased training data my models were nowhere near accurate. The training time was quite a bit longer though so I opted to focus on improving the instrument evaluation models
+
+Finally, as a bonus, I made a tiny script to generate gifs from the extracted frames. This worked great for my defense presentation and I've put a few in this README.
+
+## Cool GIF gallery:
+
+#### Vertical Speed Indicator
+
+![Vertical Speed Indicator](media/demo_screenshots/VS_Indicator_2.gif "A GIF of a vertical speed indicator moving between readings")
+
+
+#### Airspeed Indicator
+
+![Airspeed Indicator](media/demo_screenshots/airspeed_dive.gif "A GIF of an airspeed indicator increasing in reading during a dive")
+
+
+#### Frame viewer tool
+
+![Frame viewer demo](media/demo_screenshots/Frame_Viewer_Demo.gif "The frame viewer tool in action")
